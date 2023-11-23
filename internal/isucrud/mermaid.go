@@ -54,7 +54,7 @@ func writeMermaid(w io.StringWriter, nodes []*node) error {
 
 	for _, nodeType := range nodeTypes {
 		if nodeType.valid {
-			_, err = w.WriteString(fmt.Sprintf("![](https://via.placeholder.com/16/%s/FFFFFF/?text=%%20) `%s` ", nodeType.color, nodeType.name))
+			_, err = w.WriteString(fmt.Sprintf("![](https://via.placeholder.com/16/%s/FFFFFF/?text=%%20) `%s` ", nodeType.color, nodeType.label))
 			if err != nil {
 				return fmt.Errorf("failed to write node description: %w", err)
 			}
