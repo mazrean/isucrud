@@ -1,3 +1,6 @@
 # isucrud
 
+ISUCON用のDBへのCRUDを可視化することで、キャッシュすべき箇所の判断を助けるツールです。
+リクエストを受け取った関数からどの関数を通ってINSERT、UPDATE、DELETE、SELECTのSQLが実行されているかを以下のようなグラフで表現します。
+
 
