@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/mazrean/isucrud/internal/dbdoc"
+	"github.com/mazrean/isucrud/internal/isucrud"
 )
 
 var (
@@ -39,7 +39,7 @@ func main() {
 		panic(fmt.Errorf("failed to get working directory: %w", err))
 	}
 
-	err = dbdoc.Run(dbdoc.Config{
+	err = isucrud.Run(isucrud.Config{
 		WorkDir:             wd,
 		BuildArgs:           flag.Args(),
 		IgnoreFuncs:         ignores,

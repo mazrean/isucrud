@@ -1,4 +1,4 @@
-package dbdoc
+package isucrud
 
 import (
 	"go/constant"

@@ -1,4 +1,4 @@
-package dbdoc
+package isucrud
 
 import (
 	"container/list"
