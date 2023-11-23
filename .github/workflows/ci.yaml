@@ -1,0 +1,58 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - "main"
+  pull_request:
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    env:
+      GOCACHE: "/tmp/go/cache"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v4
+        with:
+          go-version-file: go.mod
+          cache: true
+      - uses: actions/cache@v3
+        with:
+          path: /tmp/go/cache
+          key: ${{ runner.os }}-go-build-${{ github.ref }}-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-go-build-${{ github.ref }}-
+            ${{ runner.os }}-go-build-
+      - run: go build -o isucrud .
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v4
+        with:
+          go-version-file: go.mod
+          cache: true
+      - run: go test ./... -v -coverprofile=./coverage.txt -race -vet=off
+      - name: Upload coverage data
+        uses: codecov/codecov-action@v3.1.4
+        with:
+          file: ./coverage.txt
+      - uses: actions/upload-artifact@v3
+        with:
+          name: coverage.txt
+          path: coverage.txt
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: golangci-lint
+        uses: reviewdog/action-golangci-lint@v2.4
+        with:
+          go_version_file: go.mod
+          reporter: github-pr-check
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          fail_on_error: true
