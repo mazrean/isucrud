@@ -61,7 +61,7 @@ func writeMermaid(w io.StringWriter, nodes []*node) error {
 		}
 	}
 
-	_, err = w.WriteString("\n")
+	_, err = w.WriteString("\n\n")
 	if err != nil {
 		return fmt.Errorf("failed to write node description end: %w", err)
 	}
