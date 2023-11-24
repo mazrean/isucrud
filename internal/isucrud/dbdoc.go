@@ -11,11 +11,12 @@ import (
 )
 
 type Config struct {
-	WorkDir             string
-	BuildArgs           []string
-	IgnoreFuncs         []string
-	IgnoreFuncPrefixes  []string
-	DestinationFilePath string
+	WorkDir                      string
+	BuildArgs                    []string
+	IgnoreFuncs                  []string
+	IgnoreFuncPrefixes           []string
+	IgnoreMain, IgnoreInitialize bool
+	DestinationFilePath          string
 }
 
 func Run(conf Config) error {
@@ -34,7 +35,11 @@ func Run(conf Config) error {
 		return fmt.Errorf("failed to build funcs: %w", err)
 	}
 
-	nodes := buildGraph(funcs, conf.IgnoreFuncs, conf.IgnoreFuncPrefixes)
+	nodes := buildGraph(
+		funcs,
+		conf.IgnoreFuncs, conf.IgnoreFuncPrefixes,
+		conf.IgnoreMain, conf.IgnoreInitialize,
+	)
 
 	f, err := os.Create(conf.DestinationFilePath)
 	if err != nil {

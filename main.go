@@ -12,10 +12,11 @@ var (
 	version  = "Unknown"
 	revision = "Unknown"
 
-	versionFlag    bool
-	dst            string
-	ignores        sliceString
-	ignorePrefixes sliceString
+	versionFlag                  bool
+	dst                          string
+	ignores                      sliceString
+	ignorePrefixes               sliceString
+	ignoreMain, ignoreInitialize bool
 )
 
 func init() {
@@ -24,6 +25,8 @@ func init() {
 	flag.StringVar(&dst, "dst", "./dbdoc.md", "destination file")
 	flag.Var(&ignores, "ignore", "ignore function")
 	flag.Var(&ignorePrefixes, "ignorePrefix", "ignore function")
+	flag.BoolVar(&ignoreMain, "ignoreMain", true, "ignore main function")
+	flag.BoolVar(&ignoreInitialize, "ignoreInitialize", true, "ignore functions with 'initialize' in the name")
 }
 
 func main() {
@@ -44,6 +47,8 @@ func main() {
 		BuildArgs:           flag.Args(),
 		IgnoreFuncs:         ignores,
 		IgnoreFuncPrefixes:  ignorePrefixes,
+		IgnoreMain:          ignoreMain,
+		IgnoreInitialize:    ignoreInitialize,
 		DestinationFilePath: dst,
 	})
 	if err != nil {

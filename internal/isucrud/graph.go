@@ -10,7 +10,7 @@ import (
 	"github.com/mazrean/isucrud/internal/pkg/analyze"
 )
 
-func buildGraph(funcs []function, ignoreFuncs, ignoreFuncPrefixes []string) []*node {
+func buildGraph(funcs []function, ignoreFuncs, ignoreFuncPrefixes []string, ignoreMain, ignoreInitialize bool) []*node {
 	type tmpEdge struct {
 		label    string
 		edgeType edgeType
@@ -23,7 +23,8 @@ func buildGraph(funcs []function, ignoreFuncs, ignoreFuncPrefixes []string) []*n
 	tmpNodeMap := make(map[string]tmpNode, len(funcs))
 FUNC_LOOP:
 	for _, f := range funcs {
-		if f.name == "main" || analyze.IsInitializeFuncName(f.name) {
+		if (ignoreMain && f.name == "main") ||
+			(ignoreInitialize && analyze.IsInitializeFuncName(f.name)) {
 			continue
 		}
 
