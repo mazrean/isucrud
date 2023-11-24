@@ -18,6 +18,23 @@ ISUCON用のDBの各テーブルへのCRUDを可視化することで、キャ�
 go install github.com/mazrean/isucrud@latest
 ```
 
+## Usage
+```
+Usage of isucrud:
+  -dst string
+    	destination file (default "./dbdoc.md")
+  -ignore value
+    	ignore function
+  -ignoreInitialize
+    	ignore functions with 'initialize' in the name (default true)
+  -ignoreMain
+    	ignore main function (default true)
+  -ignorePrefix value
+    	ignore function
+  -version
+    	show version
+```
+
 ## 注意事項
 SQLの解析を簡易的に行っている関係で、解析に失敗したりCRUD対象テーブルを見逃すことがあります。
 あくまでもキャッシュ対象テーブルの判断の参考程度に用いることをお勧めします。
