@@ -20,22 +20,22 @@ type Config struct {
 }
 
 func Run(conf Config) error {
-	ctx := &context{
-		fileSet: token.NewFileSet(),
-		workDir: conf.WorkDir,
+	ctx := &Context{
+		FileSet: token.NewFileSet(),
+		WorkDir: conf.WorkDir,
 	}
 
-	ssaProgram, pkgs, err := buildSSA(ctx, conf.BuildArgs)
+	ssaProgram, pkgs, err := BuildSSA(ctx, conf.BuildArgs)
 	if err != nil {
 		return fmt.Errorf("failed to build ssa: %w", err)
 	}
 
-	funcs, err := buildFuncs(ctx, pkgs, ssaProgram)
+	funcs, err := BuildFuncs(ctx, pkgs, ssaProgram)
 	if err != nil {
 		return fmt.Errorf("failed to build funcs: %w", err)
 	}
 
-	nodes := buildGraph(
+	nodes := BuildGraph(
 		funcs,
 		conf.IgnoreFuncs, conf.IgnoreFuncPrefixes,
 		conf.IgnoreMain, conf.IgnoreInitialize,
@@ -55,9 +55,9 @@ func Run(conf Config) error {
 	return nil
 }
 
-func buildSSA(ctx *context, args []string) (*ssa.Program, []*packages.Package, error) {
+func BuildSSA(ctx *Context, args []string) (*ssa.Program, []*packages.Package, error) {
 	pkgs, err := packages.Load(&packages.Config{
-		Fset: ctx.fileSet,
+		Fset: ctx.FileSet,
 		Mode: packages.NeedFiles | packages.NeedSyntax | packages.NeedTypes | packages.NeedImports | packages.NeedTypesInfo | packages.NeedName | packages.NeedModule,
 	}, args...)
 	if err != nil {

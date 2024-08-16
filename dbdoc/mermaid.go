@@ -130,7 +130,7 @@ func writeMermaid(w io.StringWriter, nodes []*node) error {
 			}
 			_, err = w.WriteString(fmt.Sprintf("  %s %s %s\n", src, edgeExpr, dst))
 			if err != nil {
-				return fmt.Errorf("failed to write edge: %w\n", err)
+				return fmt.Errorf("failed to write edge: %w", err)
 			}
 
 			edgeLinksMap[edge.edgeType] = append(edgeLinksMap[edge.edgeType], strconv.Itoa(edgeID))
@@ -146,7 +146,7 @@ func writeMermaid(w io.StringWriter, nodes []*node) error {
 		if info := edgeTypes[edgeType]; info.valid {
 			_, err = w.WriteString(fmt.Sprintf("  linkStyle %s stroke:#%s,stroke-width:2px\n", strings.Join(links, ","), info.color))
 			if err != nil {
-				return fmt.Errorf("failed to write link style: %w\n", err)
+				return fmt.Errorf("failed to write link style: %w", err)
 			}
 		} else {
 			log.Printf("unknown edge type: %v\n", edgeType)

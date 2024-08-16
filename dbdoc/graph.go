@@ -10,7 +10,7 @@ import (
 	"github.com/mazrean/isucrud/internal/pkg/analyze"
 )
 
-func buildGraph(funcs []function, ignoreFuncs, ignoreFuncPrefixes []string, ignoreMain, ignoreInitialize bool) []*node {
+func BuildGraph(funcs []function, ignoreFuncs, ignoreFuncPrefixes []string, ignoreMain, ignoreInitialize bool) []*node {
 	type tmpEdge struct {
 		label    string
 		edgeType edgeType

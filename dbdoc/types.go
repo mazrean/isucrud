@@ -4,9 +4,9 @@ import (
 	"go/token"
 )
 
-type context struct {
-	fileSet *token.FileSet
-	workDir string
+type Context struct {
+	FileSet *token.FileSet
+	WorkDir string
 }
 
 type function struct {

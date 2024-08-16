@@ -18,7 +18,7 @@ var (
 	selectKeywords = []string{" where ", " group by ", " having ", " window ", " order by ", "limit ", " for "}
 )
 
-func AnalyzeSQL(ctx *context, sql stringLiteral) []query {
+func AnalyzeSQL(ctx *Context, sql stringLiteral) []query {
 	sqlValue := strings.ToLower(sql.value)
 
 	strQueries := extractSubQueries(ctx, sqlValue)
@@ -39,7 +39,7 @@ var (
 	subQueryPrefixRe = regexp.MustCompile(`^\s*\(\s*select\s+`)
 )
 
-func extractSubQueries(ctx *context, sql string) []string {
+func extractSubQueries(_ *Context, sql string) []string {
 	var subQueries []string
 
 	type subQuery struct {
@@ -101,7 +101,7 @@ func extractSubQueries(ctx *context, sql string) []string {
 	return subQueries
 }
 
-func analyzeSQLWithoutSubQuery(ctx *context, sqlValue string, pos token.Pos) []query {
+func analyzeSQLWithoutSubQuery(ctx *Context, sqlValue string, pos token.Pos) []query {
 	var queries []query
 	switch {
 	case strings.HasPrefix(sqlValue, "select"):
@@ -206,9 +206,9 @@ func analyzeSQLWithoutSubQuery(ctx *context, sqlValue string, pos token.Pos) []q
 	return queries
 }
 
-func tableForm(ctx *context, sqlValue string, pos token.Pos) []string {
-	position := ctx.fileSet.Position(pos)
-	filename, err := filepath.Rel(ctx.workDir, position.Filename)
+func tableForm(ctx *Context, sqlValue string, pos token.Pos) []string {
+	position := ctx.FileSet.Position(pos)
+	filename, err := filepath.Rel(ctx.WorkDir, position.Filename)
 	if err != nil {
 		log.Printf("failed to get relative path: %v", err)
 		return nil

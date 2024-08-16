@@ -10,7 +10,7 @@ import (
 	"golang.org/x/tools/go/ssa"
 )
 
-func buildFuncs(ctx *context, pkgs []*packages.Package, ssaProgram *ssa.Program) ([]function, error) {
+func BuildFuncs(ctx *Context, pkgs []*packages.Package, ssaProgram *ssa.Program) ([]function, error) {
 	var funcs []function
 	for _, pkg := range pkgs {
 		for _, def := range pkg.TypesInfo.Defs {
@@ -65,7 +65,7 @@ func buildFuncs(ctx *context, pkgs []*packages.Package, ssaProgram *ssa.Program)
 	return funcs, nil
 }
 
-func analyzeFuncBody(ctx *context, blocks []*ssa.BasicBlock, pos token.Pos) ([]stringLiteral, []string) {
+func analyzeFuncBody(ctx *Context, blocks []*ssa.BasicBlock, pos token.Pos) ([]stringLiteral, []string) {
 	type ssaValue struct {
 		value ssa.Value
 		pos   token.Pos
@@ -105,7 +105,7 @@ func analyzeFuncBody(ctx *context, blocks []*ssa.BasicBlock, pos token.Pos) ([]s
 				}
 			case *ssa.MakeClosure:
 				for _, bind := range instr.Bindings {
-					if bind == nil {
+					if bind != nil {
 						ssaValues = append(ssaValues, ssaValue{
 							value: bind,
 							pos:   getPos(bind.Pos(), instr.Pos(), pos),
@@ -202,7 +202,7 @@ func getPos(posList ...token.Pos) token.Pos {
 	return token.NoPos
 }
 
-func checkValue(ctx *context, v ssa.Value) (string, bool) {
+func checkValue(_ *Context, v ssa.Value) (string, bool) {
 	constValue, ok := v.(*ssa.Const)
 	if !ok || constValue == nil || constValue.Value == nil {
 		return "", false
