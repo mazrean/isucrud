@@ -1,4 +1,4 @@
-package isucrud
+package dbdoc
 
 import (
 	"fmt"
