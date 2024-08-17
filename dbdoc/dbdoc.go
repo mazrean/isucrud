@@ -30,7 +30,12 @@ func Run(conf Config) error {
 		return fmt.Errorf("failed to build ssa: %w", err)
 	}
 
-	funcs, err := BuildFuncs(ctx, pkgs, ssaProgram)
+	loopRangeMap, err := BuildLoopRangeMap(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to build loop range map: %w", err)
+	}
+
+	funcs, err := BuildFuncs(ctx, pkgs, ssaProgram, loopRangeMap)
 	if err != nil {
 		return fmt.Errorf("failed to build funcs: %w", err)
 	}

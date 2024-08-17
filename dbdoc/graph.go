@@ -15,6 +15,7 @@ func BuildGraph(funcs []function, ignoreFuncs, ignoreFuncPrefixes []string, igno
 		label    string
 		edgeType edgeType
 		childID  string
+		inLoop   bool
 	}
 	type tmpNode struct {
 		*node
@@ -42,17 +43,17 @@ FUNC_LOOP:
 
 		var edges []tmpEdge
 		for _, q := range f.queries {
-			id := tableID(q.table)
+			id := tableID(q.value.table)
 			tmpNodeMap[id] = tmpNode{
 				node: &node{
 					id:       id,
-					label:    q.table,
+					label:    q.value.table,
 					nodeType: nodeTypeTable,
 				},
 			}
 
 			var edgeType edgeType
-			switch q.queryType {
+			switch q.value.queryType {
 			case queryTypeSelect:
 				edgeType = edgeTypeSelect
 			case queryTypeInsert:
@@ -62,23 +63,25 @@ FUNC_LOOP:
 			case queryTypeDelete:
 				edgeType = edgeTypeDelete
 			default:
-				log.Printf("unknown query type: %v\n", q.queryType)
+				log.Printf("unknown query type: %v\n", q.value.queryType)
 				continue
 			}
 
 			edges = append(edges, tmpEdge{
 				label:    "",
 				edgeType: edgeType,
-				childID:  tableID(q.table),
+				childID:  tableID(q.value.table),
+				inLoop:   q.inLoop,
 			})
 		}
 
 		for _, c := range f.calls {
-			id := funcID(c)
+			id := funcID(c.value)
 			edges = append(edges, tmpEdge{
 				label:    "",
 				edgeType: edgeTypeCall,
 				childID:  id,
+				inLoop:   c.inLoop,
 			})
 		}
 
@@ -109,6 +112,7 @@ FUNC_LOOP:
 		label    string
 		edgeType edgeType
 		parentID string
+		inLoop   bool
 	}
 	revEdgeMap := make(map[string][]revEdge)
 	for _, tmpNode := range tmpNodeMap {
@@ -117,6 +121,7 @@ FUNC_LOOP:
 				label:    tmpEdge.label,
 				edgeType: tmpEdge.edgeType,
 				parentID: tmpNode.id,
+				inLoop:   tmpEdge.inLoop,
 			})
 		}
 	}
@@ -132,11 +137,7 @@ FUNC_LOOP:
 		}
 	}
 
-	for {
-		element := nodeQueue.Front()
-		if element == nil {
-			break
-		}
+	for element := nodeQueue.Front(); element != nil; element = nodeQueue.Front() {
 		nodeQueue.Remove(element)
 
 		node := element.Value.(tmpNode)
@@ -161,6 +162,7 @@ FUNC_LOOP:
 				label:    tmpEdge.label,
 				node:     child.node,
 				edgeType: tmpEdge.edgeType,
+				inLoop:   tmpEdge.inLoop,
 			})
 		}
 		nodes = append(nodes, node)

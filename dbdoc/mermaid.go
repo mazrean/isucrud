@@ -121,6 +121,9 @@ func writeMermaid(w io.StringWriter, nodes []*node) error {
 			}
 
 			line := "--"
+			if edge.inLoop {
+				line = "=="
+			}
 
 			var edgeExpr string
 			if edge.label == "" {

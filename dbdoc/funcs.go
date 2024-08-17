@@ -10,7 +10,7 @@ import (
 	"golang.org/x/tools/go/ssa"
 )
 
-func BuildFuncs(ctx *Context, pkgs []*packages.Package, ssaProgram *ssa.Program) ([]function, error) {
+func BuildFuncs(ctx *Context, pkgs []*packages.Package, ssaProgram *ssa.Program, loopRangeMap LoopRangeMap) ([]function, error) {
 	var funcs []function
 	for _, pkg := range pkgs {
 		for _, def := range pkg.TypesInfo.Defs {
@@ -52,11 +52,28 @@ func BuildFuncs(ctx *Context, pkgs []*packages.Package, ssaProgram *ssa.Program)
 					queries = append(queries, newQueries...)
 				}
 
+				loopRanges := loopRangeMap[ssaFunc.Name()]
+				queriesInLoop := make([]inLoop[query], 0, len(queries))
+				for _, q := range queries {
+					queriesInLoop = append(queriesInLoop, inLoop[query]{
+						value:  q,
+						inLoop: loopRanges.Search(ctx.FileSet, q.pos),
+					})
+				}
+
+				callsInLoop := make([]inLoop[string], 0, len(calls))
+				for _, call := range calls {
+					callsInLoop = append(callsInLoop, inLoop[string]{
+						value:  call.id,
+						inLoop: loopRanges.Search(ctx.FileSet, call.pos),
+					})
+				}
+
 				funcs = append(funcs, function{
 					id:      def.Id(),
 					name:    def.Name(),
-					queries: queries,
-					calls:   calls,
+					queries: queriesInLoop,
+					calls:   callsInLoop,
 				})
 			}
 		}
@@ -65,13 +82,18 @@ func BuildFuncs(ctx *Context, pkgs []*packages.Package, ssaProgram *ssa.Program)
 	return funcs, nil
 }
 
-func analyzeFuncBody(ctx *Context, blocks []*ssa.BasicBlock, pos token.Pos) ([]stringLiteral, []string) {
+type funcCall struct {
+	id  string
+	pos token.Pos
+}
+
+func analyzeFuncBody(ctx *Context, blocks []*ssa.BasicBlock, pos token.Pos) ([]stringLiteral, []funcCall) {
 	type ssaValue struct {
 		value ssa.Value
 		pos   token.Pos
 	}
 	var ssaValues []ssaValue
-	var calls []string
+	var calls []funcCall
 	for _, block := range blocks {
 		for _, instr := range block.Instrs {
 			switch instr := instr.(type) {
@@ -131,7 +153,10 @@ func analyzeFuncBody(ctx *Context, blocks []*ssa.BasicBlock, pos token.Pos) ([]s
 					if f.Object() == nil {
 						continue
 					}
-					calls = append(calls, f.Object().Id())
+					calls = append(calls, funcCall{
+						id:  f.Object().Id(),
+						pos: getPos(f.Pos(), instr.Pos(), pos),
+					})
 				}
 
 				for _, arg := range instr.Call.Args {
@@ -147,7 +172,10 @@ func analyzeFuncBody(ctx *Context, blocks []*ssa.BasicBlock, pos token.Pos) ([]s
 					if f.Object() == nil {
 						continue
 					}
-					calls = append(calls, f.Object().Id())
+					calls = append(calls, funcCall{
+						id:  f.Object().Id(),
+						pos: getPos(instr.Call.Pos(), instr.Pos(), pos),
+					})
 				}
 
 				for _, arg := range instr.Call.Args {
@@ -163,7 +191,10 @@ func analyzeFuncBody(ctx *Context, blocks []*ssa.BasicBlock, pos token.Pos) ([]s
 					if f.Object() == nil {
 						continue
 					}
-					calls = append(calls, f.Object().Id())
+					calls = append(calls, funcCall{
+						id:  f.Object().Id(),
+						pos: getPos(instr.Call.Pos(), instr.Pos(), pos),
+					})
 				}
 
 				for _, arg := range instr.Call.Args {

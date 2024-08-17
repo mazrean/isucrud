@@ -9,11 +9,41 @@ type Context struct {
 	WorkDir string
 }
 
+type LoopRange struct {
+	start token.Pos
+	end   token.Pos
+}
+type LoopRanges []LoopRange
+type LoopRangeMap map[string]LoopRanges
+
+func (lr LoopRanges) Search(fset *token.FileSet, pos token.Pos) bool {
+	position := fset.Position(pos)
+	for _, r := range lr {
+		start := fset.Position(r.start)
+		end := fset.Position(r.end)
+		if position.Filename != start.Filename || position.Filename != end.Filename ||
+			position.Line < start.Line || position.Line > end.Line ||
+			(position.Line == start.Line && position.Column < start.Column) ||
+			(position.Line == end.Line && position.Column > end.Column) {
+			continue
+		}
+
+		return true
+	}
+
+	return false
+}
+
+type inLoop[T any] struct {
+	value  T
+	inLoop bool
+}
+
 type function struct {
 	id      string
 	name    string
-	queries []query
-	calls   []string
+	queries []inLoop[query]
+	calls   []inLoop[string]
 }
 
 type stringLiteral struct {
@@ -70,6 +100,7 @@ type edge struct {
 	label    string
 	node     *node
 	edgeType edgeType
+	inLoop   bool
 }
 
 type edgeType uint8
