@@ -25,23 +25,23 @@ var (
 		color string
 		valid bool
 	}{
-		nodeTypeTable:    {"table", "テーブル", tableNodeColor, true},
-		nodeTypeFunction: {"func", "関数", funcNodeColor, true},
+		NodeTypeTable:    {"table", "テーブル", tableNodeColor, true},
+		NodeTypeFunction: {"func", "関数", funcNodeColor, true},
 	}
 	edgeTypes = []struct {
 		label string
 		color string
 		valid bool
 	}{
-		edgeTypeInsert: {"INSERT", insertLinkColor, true},
-		edgeTypeUpdate: {"UPDATE", updateLinkColor, true},
-		edgeTypeDelete: {"DELETE", deleteLinkColor, true},
-		edgeTypeSelect: {"SELECT", selectLinkColor, true},
-		edgeTypeCall:   {"関数呼び出し", callLinkColor, true},
+		EdgeTypeInsert: {"INSERT", insertLinkColor, true},
+		EdgeTypeUpdate: {"UPDATE", updateLinkColor, true},
+		EdgeTypeDelete: {"DELETE", deleteLinkColor, true},
+		EdgeTypeSelect: {"SELECT", selectLinkColor, true},
+		EdgeTypeCall:   {"関数呼び出し", callLinkColor, true},
 	}
 )
 
-func writeMermaid(w io.StringWriter, nodes []*node) error {
+func WriteMermaid(w io.StringWriter, nodes []*Node) error {
 	_, err := w.WriteString("# DB Graph\n")
 	if err != nil {
 		return fmt.Errorf("failed to write header: %w", err)
@@ -100,43 +100,43 @@ func writeMermaid(w io.StringWriter, nodes []*node) error {
 		}
 	}
 
-	edgeLinksMap := map[edgeType][]string{}
+	edgeLinksMap := map[EdgeType][]string{}
 	edgeID := 0
 	for _, node := range nodes {
 		var src string
-		if nodeType := nodeTypes[node.nodeType]; nodeType.valid {
-			src = fmt.Sprintf("%s[%s]:::%s", node.id, node.label, nodeType.name)
+		if nodeType := nodeTypes[node.NodeType]; nodeType.valid {
+			src = fmt.Sprintf("%s[%s]:::%s", node.ID, node.Label, nodeType.name)
 		} else {
-			log.Printf("unknown node type: %v\n", node.nodeType)
+			log.Printf("unknown node type: %v\n", node.NodeType)
 			continue
 		}
 
-		for _, edge := range node.edges {
+		for _, edge := range node.Edges {
 			var dst string
-			if nodeType := nodeTypes[edge.node.nodeType]; nodeType.valid {
-				dst = fmt.Sprintf("%s[%s]:::%s", edge.node.id, edge.node.label, nodeType.name)
+			if nodeType := nodeTypes[edge.Node.NodeType]; nodeType.valid {
+				dst = fmt.Sprintf("%s[%s]:::%s", edge.Node.ID, edge.Node.Label, nodeType.name)
 			} else {
-				log.Printf("unknown node type: %v\n", node.nodeType)
+				log.Printf("unknown node type: %v\n", node.NodeType)
 				continue
 			}
 
 			line := "--"
-			if edge.inLoop {
+			if edge.InLoop {
 				line = "=="
 			}
 
 			var edgeExpr string
-			if edge.label == "" {
+			if edge.Label == "" {
 				edgeExpr = fmt.Sprintf("%s>", line)
 			} else {
-				edgeExpr = fmt.Sprintf("%s %s %s>", line, edge.label, line)
+				edgeExpr = fmt.Sprintf("%s %s %s>", line, edge.Label, line)
 			}
 			_, err = w.WriteString(fmt.Sprintf("  %s %s %s\n", src, edgeExpr, dst))
 			if err != nil {
 				return fmt.Errorf("failed to write edge: %w", err)
 			}
 
-			edgeLinksMap[edge.edgeType] = append(edgeLinksMap[edge.edgeType], strconv.Itoa(edgeID))
+			edgeLinksMap[edge.EdgeType] = append(edgeLinksMap[edge.EdgeType], strconv.Itoa(edgeID))
 
 			edgeID++
 		}

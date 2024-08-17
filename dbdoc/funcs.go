@@ -10,8 +10,8 @@ import (
 	"golang.org/x/tools/go/ssa"
 )
 
-func BuildFuncs(ctx *Context, pkgs []*packages.Package, ssaProgram *ssa.Program, loopRangeMap LoopRangeMap) ([]function, error) {
-	var funcs []function
+func BuildFuncs(ctx *Context, pkgs []*packages.Package, ssaProgram *ssa.Program, loopRangeMap LoopRangeMap) ([]Function, error) {
+	var funcs []Function
 	for _, pkg := range pkgs {
 		for _, def := range pkg.TypesInfo.Defs {
 			if def == nil {
@@ -46,34 +46,38 @@ func BuildFuncs(ctx *Context, pkgs []*packages.Package, ssaProgram *ssa.Program,
 					continue
 				}
 
-				queries := make([]query, 0, len(stringLiterals))
+				queries := make([]Query, 0, len(stringLiterals))
 				for _, strLiteral := range stringLiterals {
 					newQueries := AnalyzeSQL(ctx, strLiteral)
 					queries = append(queries, newQueries...)
 				}
 
 				loopRanges := loopRangeMap[ssaFunc.Name()]
-				queriesInLoop := make([]inLoop[query], 0, len(queries))
+				queriesInLoop := make([]InLoop[Query], 0, len(queries))
 				for _, q := range queries {
-					queriesInLoop = append(queriesInLoop, inLoop[query]{
-						value:  q,
-						inLoop: loopRanges.Search(ctx.FileSet, q.pos),
+					queriesInLoop = append(queriesInLoop, InLoop[Query]{
+						Value:  q,
+						InLoop: loopRanges.Search(ctx.FileSet, q.Pos),
 					})
 				}
 
-				callsInLoop := make([]inLoop[string], 0, len(calls))
+				callsInLoop := make([]InLoop[Call], 0, len(calls))
 				for _, call := range calls {
-					callsInLoop = append(callsInLoop, inLoop[string]{
-						value:  call.id,
-						inLoop: loopRanges.Search(ctx.FileSet, call.pos),
+					callsInLoop = append(callsInLoop, InLoop[Call]{
+						Value: Call{
+							FunctionID: call.id,
+							Pos:        call.pos,
+						},
+						InLoop: loopRanges.Search(ctx.FileSet, call.pos),
 					})
 				}
 
-				funcs = append(funcs, function{
-					id:      def.Id(),
-					name:    def.Name(),
-					queries: queriesInLoop,
-					calls:   callsInLoop,
+				funcs = append(funcs, Function{
+					ID:      def.Id(),
+					Name:    def.Name(),
+					Pos:     def.Pos(),
+					Queries: queriesInLoop,
+					Calls:   callsInLoop,
 				})
 			}
 		}

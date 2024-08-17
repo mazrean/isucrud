@@ -18,16 +18,16 @@ var (
 	selectKeywords = []string{" where ", " group by ", " having ", " window ", " order by ", "limit ", " for "}
 )
 
-func AnalyzeSQL(ctx *Context, sql stringLiteral) []query {
+func AnalyzeSQL(ctx *Context, sql stringLiteral) []Query {
 	sqlValue := strings.ToLower(sql.value)
 
 	strQueries := extractSubQueries(ctx, sqlValue)
 
-	var queries []query
+	var queries []Query
 	for _, sqlValue := range strQueries {
 		newQueries := analyzeSQLWithoutSubQuery(ctx, sqlValue, sql.pos)
 		for _, query := range newQueries {
-			fmt.Printf("%s(%s): %s\n", query.queryType, query.table, sqlValue)
+			fmt.Printf("%s(%s): %s\n", query.QueryType, query.Table, sqlValue)
 		}
 		queries = append(queries, newQueries...)
 	}
@@ -101,8 +101,8 @@ func extractSubQueries(_ *Context, sql string) []string {
 	return subQueries
 }
 
-func analyzeSQLWithoutSubQuery(ctx *Context, sqlValue string, pos token.Pos) []query {
-	var queries []query
+func analyzeSQLWithoutSubQuery(ctx *Context, sqlValue string, pos token.Pos) []Query {
+	var queries []Query
 	switch {
 	case strings.HasPrefix(sqlValue, "select"):
 		_, after, found := strings.Cut(sqlValue, " from ")
@@ -110,10 +110,10 @@ func analyzeSQLWithoutSubQuery(ctx *Context, sqlValue string, pos token.Pos) []q
 			tableNames := tableForm(ctx, sqlValue, pos)
 
 			for _, tableName := range tableNames {
-				queries = append(queries, query{
-					queryType: queryTypeSelect,
-					table:     tableName,
-					pos:       pos,
+				queries = append(queries, Query{
+					QueryType: QueryTypeSelect,
+					Table:     tableName,
+					Pos:       pos,
 				})
 			}
 			break
@@ -140,10 +140,10 @@ func analyzeSQLWithoutSubQuery(ctx *Context, sqlValue string, pos token.Pos) []q
 
 			for i, name := range tableRe.SubexpNames() {
 				if name == "Table" {
-					queries = append(queries, query{
-						queryType: queryTypeSelect,
-						table:     matches[i],
-						pos:       pos,
+					queries = append(queries, Query{
+						QueryType: QueryTypeSelect,
+						Table:     matches[i],
+						Pos:       pos,
 					})
 				}
 			}
@@ -153,10 +153,10 @@ func analyzeSQLWithoutSubQuery(ctx *Context, sqlValue string, pos token.Pos) []q
 
 		for i, name := range insertRe.SubexpNames() {
 			if name == "Table" {
-				queries = append(queries, query{
-					queryType: queryTypeInsert,
-					table:     matches[i],
-					pos:       pos,
+				queries = append(queries, Query{
+					QueryType: QueryTypeInsert,
+					Table:     matches[i],
+					Pos:       pos,
 				})
 			}
 		}
@@ -181,10 +181,10 @@ func analyzeSQLWithoutSubQuery(ctx *Context, sqlValue string, pos token.Pos) []q
 
 			for i, name := range tableRe.SubexpNames() {
 				if name == "Table" {
-					queries = append(queries, query{
-						queryType: queryTypeUpdate,
-						table:     matches[i],
-						pos:       pos,
+					queries = append(queries, Query{
+						QueryType: QueryTypeUpdate,
+						Table:     matches[i],
+						Pos:       pos,
 					})
 				}
 			}
@@ -194,10 +194,10 @@ func analyzeSQLWithoutSubQuery(ctx *Context, sqlValue string, pos token.Pos) []q
 
 		for i, name := range deleteRe.SubexpNames() {
 			if name == "Table" {
-				queries = append(queries, query{
-					queryType: queryTypeDelete,
-					table:     matches[i],
-					pos:       pos,
+				queries = append(queries, Query{
+					QueryType: QueryTypeDelete,
+					Table:     matches[i],
+					Pos:       pos,
 				})
 			}
 		}

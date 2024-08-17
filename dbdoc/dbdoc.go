@@ -52,7 +52,7 @@ func Run(conf Config) error {
 	}
 	defer f.Close()
 
-	err = writeMermaid(f, nodes)
+	err = WriteMermaid(f, nodes)
 	if err != nil {
 		return fmt.Errorf("failed to write mermaid: %w", err)
 	}

@@ -10,78 +10,78 @@ import (
 	"github.com/mazrean/isucrud/internal/pkg/analyze"
 )
 
-func BuildGraph(funcs []function, ignoreFuncs, ignoreFuncPrefixes []string, ignoreMain, ignoreInitialize bool) []*node {
+func BuildGraph(funcs []Function, ignoreFuncs, ignoreFuncPrefixes []string, ignoreMain, ignoreInitialize bool) []*Node {
 	type tmpEdge struct {
 		label    string
-		edgeType edgeType
+		edgeType EdgeType
 		childID  string
 		inLoop   bool
 	}
 	type tmpNode struct {
-		*node
+		*Node
 		edges []tmpEdge
 	}
 	tmpNodeMap := make(map[string]tmpNode, len(funcs))
 FUNC_LOOP:
 	for _, f := range funcs {
-		if (ignoreMain && f.name == "main") ||
-			(ignoreInitialize && analyze.IsInitializeFuncName(f.name)) {
+		if (ignoreMain && f.Name == "main") ||
+			(ignoreInitialize && analyze.IsInitializeFuncName(f.Name)) {
 			continue
 		}
 
 		for _, ignore := range ignoreFuncs {
-			if f.name == ignore {
+			if f.Name == ignore {
 				continue FUNC_LOOP
 			}
 		}
 
 		for _, ignorePrefix := range ignoreFuncPrefixes {
-			if strings.HasPrefix(f.name, ignorePrefix) {
+			if strings.HasPrefix(f.Name, ignorePrefix) {
 				continue FUNC_LOOP
 			}
 		}
 
 		var edges []tmpEdge
-		for _, q := range f.queries {
-			id := tableID(q.value.table)
+		for _, q := range f.Queries {
+			id := tableID(q.Value.Table)
 			tmpNodeMap[id] = tmpNode{
-				node: &node{
-					id:       id,
-					label:    q.value.table,
-					nodeType: nodeTypeTable,
+				Node: &Node{
+					ID:       id,
+					Label:    q.Value.Table,
+					NodeType: NodeTypeTable,
 				},
 			}
 
-			var edgeType edgeType
-			switch q.value.queryType {
-			case queryTypeSelect:
-				edgeType = edgeTypeSelect
-			case queryTypeInsert:
-				edgeType = edgeTypeInsert
-			case queryTypeUpdate:
-				edgeType = edgeTypeUpdate
-			case queryTypeDelete:
-				edgeType = edgeTypeDelete
+			var edgeType EdgeType
+			switch q.Value.QueryType {
+			case QueryTypeSelect:
+				edgeType = EdgeTypeSelect
+			case QueryTypeInsert:
+				edgeType = EdgeTypeInsert
+			case QueryTypeUpdate:
+				edgeType = EdgeTypeUpdate
+			case QueryTypeDelete:
+				edgeType = EdgeTypeDelete
 			default:
-				log.Printf("unknown query type: %v\n", q.value.queryType)
+				log.Printf("unknown query type: %v\n", q.Value.QueryType)
 				continue
 			}
 
 			edges = append(edges, tmpEdge{
 				label:    "",
 				edgeType: edgeType,
-				childID:  tableID(q.value.table),
-				inLoop:   q.inLoop,
+				childID:  tableID(q.Value.Table),
+				inLoop:   q.InLoop,
 			})
 		}
 
-		for _, c := range f.calls {
-			id := funcID(c.value)
+		for _, c := range f.Calls {
+			id := funcID(c.Value.FunctionID)
 			edges = append(edges, tmpEdge{
 				label:    "",
-				edgeType: edgeTypeCall,
+				edgeType: EdgeTypeCall,
 				childID:  id,
-				inLoop:   c.inLoop,
+				inLoop:   c.InLoop,
 			})
 		}
 
@@ -97,12 +97,12 @@ FUNC_LOOP:
 		})
 		edges = slices.Compact(edges)
 
-		id := funcID(f.id)
+		id := funcID(f.ID)
 		tmpNodeMap[id] = tmpNode{
-			node: &node{
-				id:       id,
-				label:    f.name,
-				nodeType: nodeTypeFunction,
+			Node: &Node{
+				ID:       id,
+				Label:    f.Name,
+				NodeType: NodeTypeFunction,
 			},
 			edges: edges,
 		}
@@ -110,7 +110,7 @@ FUNC_LOOP:
 
 	type revEdge struct {
 		label    string
-		edgeType edgeType
+		edgeType EdgeType
 		parentID string
 		inLoop   bool
 	}
@@ -120,7 +120,7 @@ FUNC_LOOP:
 			revEdgeMap[tmpEdge.childID] = append(revEdgeMap[tmpEdge.childID], revEdge{
 				label:    tmpEdge.label,
 				edgeType: tmpEdge.edgeType,
-				parentID: tmpNode.id,
+				parentID: tmpNode.ID,
 				inLoop:   tmpEdge.inLoop,
 			})
 		}
@@ -129,7 +129,7 @@ FUNC_LOOP:
 	newNodeMap := make(map[string]tmpNode, len(tmpNodeMap))
 	nodeQueue := list.New()
 	for id, node := range tmpNodeMap {
-		if node.nodeType == nodeTypeTable {
+		if node.NodeType == NodeTypeTable {
 			newNodeMap[id] = node
 			nodeQueue.PushBack(node)
 			delete(tmpNodeMap, id)
@@ -141,28 +141,28 @@ FUNC_LOOP:
 		nodeQueue.Remove(element)
 
 		node := element.Value.(tmpNode)
-		for _, edge := range revEdgeMap[node.id] {
+		for _, edge := range revEdgeMap[node.ID] {
 			parent := tmpNodeMap[edge.parentID]
 			newNodeMap[edge.parentID] = parent
 			nodeQueue.PushBack(parent)
 		}
-		delete(revEdgeMap, node.id)
+		delete(revEdgeMap, node.ID)
 	}
 
-	var nodes []*node
+	var nodes []*Node
 	for _, tmpNode := range newNodeMap {
-		node := tmpNode.node
+		node := tmpNode.Node
 		for _, tmpEdge := range tmpNode.edges {
 			child, ok := newNodeMap[tmpEdge.childID]
 			if !ok {
 				continue
 			}
 
-			node.edges = append(node.edges, edge{
-				label:    tmpEdge.label,
-				node:     child.node,
-				edgeType: tmpEdge.edgeType,
-				inLoop:   tmpEdge.inLoop,
+			node.Edges = append(node.Edges, Edge{
+				Label:    tmpEdge.label,
+				Node:     child.Node,
+				EdgeType: tmpEdge.edgeType,
+				InLoop:   tmpEdge.inLoop,
 			})
 		}
 		nodes = append(nodes, node)

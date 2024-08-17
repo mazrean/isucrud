@@ -38,14 +38,14 @@ func (v *loopRangeVisitor) Visit(node ast.Node) ast.Visitor {
 	switch n := node.(type) {
 	case *ast.ForStmt:
 		v.lr = append(v.lr, LoopRange{
-			start: n.Body.Lbrace,
-			end:   n.Body.Rbrace,
+			Start: n.Body.Lbrace,
+			End:   n.Body.Rbrace,
 		})
 		return nil
 	case *ast.RangeStmt:
 		v.lr = append(v.lr, LoopRange{
-			start: n.Body.Lbrace,
-			end:   n.Body.Rbrace,
+			Start: n.Body.Lbrace,
+			End:   n.Body.Rbrace,
 		})
 		return nil
 	}

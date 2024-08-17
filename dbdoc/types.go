@@ -10,8 +10,8 @@ type Context struct {
 }
 
 type LoopRange struct {
-	start token.Pos
-	end   token.Pos
+	Start token.Pos
+	End   token.Pos
 }
 type LoopRanges []LoopRange
 type LoopRangeMap map[string]LoopRanges
@@ -19,8 +19,8 @@ type LoopRangeMap map[string]LoopRanges
 func (lr LoopRanges) Search(fset *token.FileSet, pos token.Pos) bool {
 	position := fset.Position(pos)
 	for _, r := range lr {
-		start := fset.Position(r.start)
-		end := fset.Position(r.end)
+		start := fset.Position(r.Start)
+		end := fset.Position(r.End)
 		if position.Filename != start.Filename || position.Filename != end.Filename ||
 			position.Line < start.Line || position.Line > end.Line ||
 			(position.Line == start.Line && position.Column < start.Column) ||
@@ -34,16 +34,17 @@ func (lr LoopRanges) Search(fset *token.FileSet, pos token.Pos) bool {
 	return false
 }
 
-type inLoop[T any] struct {
-	value  T
-	inLoop bool
+type InLoop[T any] struct {
+	Value  T
+	InLoop bool
 }
 
-type function struct {
-	id      string
-	name    string
-	queries []inLoop[query]
-	calls   []inLoop[string]
+type Function struct {
+	ID      string
+	Name    string
+	Pos     token.Pos
+	Queries []InLoop[Query]
+	Calls   []InLoop[Call]
 }
 
 type stringLiteral struct {
@@ -51,65 +52,70 @@ type stringLiteral struct {
 	pos   token.Pos
 }
 
-type query struct {
-	queryType queryType
-	table     string
-	pos       token.Pos
+type Call struct {
+	FunctionID string
+	Pos        token.Pos
 }
 
-type queryType uint8
+type Query struct {
+	QueryType QueryType
+	Table     string
+	Pos       token.Pos
+}
+
+type QueryType uint8
 
 const (
-	queryTypeSelect queryType = iota + 1
-	queryTypeInsert
-	queryTypeUpdate
-	queryTypeDelete
+	QueryTypeSelect QueryType = iota + 1
+	QueryTypeInsert
+	QueryTypeUpdate
+	QueryTypeDelete
 )
 
-func (qt queryType) String() string {
+func (qt QueryType) String() string {
 	switch qt {
-	case queryTypeSelect:
+	case QueryTypeSelect:
 		return "select"
-	case queryTypeInsert:
+	case QueryTypeInsert:
 		return "insert"
-	case queryTypeUpdate:
+	case QueryTypeUpdate:
 		return "update"
-	case queryTypeDelete:
+	case QueryTypeDelete:
 		return "delete"
 	}
 
 	return ""
 }
 
-type node struct {
-	id       string
-	label    string
-	nodeType nodeType
-	edges    []edge
+type Node struct {
+	ID       string
+	Label    string
+	NodeType NodeType
+	Edges    []Edge
 }
 
-type nodeType uint8
+type NodeType uint8
 
 const (
-	nodeTypeUnknown nodeType = iota
-	nodeTypeTable
-	nodeTypeFunction
+	NodeTypeUnknown NodeType = iota
+	NodeTypeTable
+	NodeTypeFunction
 )
 
-type edge struct {
-	label    string
-	node     *node
-	edgeType edgeType
-	inLoop   bool
+type Edge struct {
+	Label    string
+	Node     *Node
+	EdgeType EdgeType
+	InLoop   bool
 }
 
-type edgeType uint8
+type EdgeType uint8
 
 const (
-	edgeTypeUnknown edgeType = iota
-	edgeTypeInsert
-	edgeTypeUpdate
-	edgeTypeDelete
-	edgeTypeSelect
-	edgeTypeCall
+	EdgeTypeUnknown EdgeType = iota
+	EdgeTypeInsert
+	EdgeTypeUpdate
+	EdgeTypeDelete
+	EdgeTypeSelect
+	EdgeTypeCall
 )
