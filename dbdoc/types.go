@@ -1,6 +1,7 @@
 package dbdoc
 
 import (
+	"fmt"
 	"go/token"
 )
 
@@ -61,6 +62,11 @@ type Query struct {
 	QueryType QueryType
 	Table     string
 	Pos       token.Pos
+	Raw       string
+}
+
+func (q Query) String() string {
+	return fmt.Sprintf("%s:%s:%s", q.QueryType, q.Table, q.Raw)
 }
 
 type QueryType uint8

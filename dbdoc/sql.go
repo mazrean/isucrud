@@ -27,7 +27,7 @@ func AnalyzeSQL(ctx *Context, sql stringLiteral) []Query {
 	for _, sqlValue := range strQueries {
 		newQueries := analyzeSQLWithoutSubQuery(ctx, sqlValue, sql.pos)
 		for _, query := range newQueries {
-			fmt.Printf("%s(%s): %s\n", query.QueryType, query.Table, sqlValue)
+			fmt.Println(query)
 		}
 		queries = append(queries, newQueries...)
 	}
@@ -114,6 +114,7 @@ func analyzeSQLWithoutSubQuery(ctx *Context, sqlValue string, pos token.Pos) []Q
 					QueryType: QueryTypeSelect,
 					Table:     tableName,
 					Pos:       pos,
+					Raw:       sqlValue,
 				})
 			}
 			break
@@ -144,6 +145,7 @@ func analyzeSQLWithoutSubQuery(ctx *Context, sqlValue string, pos token.Pos) []Q
 						QueryType: QueryTypeSelect,
 						Table:     matches[i],
 						Pos:       pos,
+						Raw:       sqlValue,
 					})
 				}
 			}
@@ -157,6 +159,7 @@ func analyzeSQLWithoutSubQuery(ctx *Context, sqlValue string, pos token.Pos) []Q
 					QueryType: QueryTypeInsert,
 					Table:     matches[i],
 					Pos:       pos,
+					Raw:       sqlValue,
 				})
 			}
 		}
@@ -185,6 +188,7 @@ func analyzeSQLWithoutSubQuery(ctx *Context, sqlValue string, pos token.Pos) []Q
 						QueryType: QueryTypeUpdate,
 						Table:     matches[i],
 						Pos:       pos,
+						Raw:       sqlValue,
 					})
 				}
 			}
@@ -198,6 +202,7 @@ func analyzeSQLWithoutSubQuery(ctx *Context, sqlValue string, pos token.Pos) []Q
 					QueryType: QueryTypeDelete,
 					Table:     matches[i],
 					Pos:       pos,
+					Raw:       sqlValue,
 				})
 			}
 		}
