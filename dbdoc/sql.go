@@ -104,6 +104,9 @@ func extractSubQueries(_ *Context, sql string) []string {
 
 func analyzeSQLWithoutSubQuery(ctx *Context, sqlValue string, pos token.Pos) []Query {
 	sqlValue = strings.TrimLeftFunc(sqlValue, unicode.IsSpace)
+	sqlValue = strings.TrimFunc(sqlValue, func(r rune) bool {
+		return r == '\n' || r == '\r'
+	})
 
 	var queries []Query
 	switch {
