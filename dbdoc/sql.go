@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
+	"unicode"
 
 	"github.com/mazrean/isucrud/internal/pkg/list"
 )
@@ -102,6 +103,8 @@ func extractSubQueries(_ *Context, sql string) []string {
 }
 
 func analyzeSQLWithoutSubQuery(ctx *Context, sqlValue string, pos token.Pos) []Query {
+	sqlValue = strings.TrimLeftFunc(sqlValue, unicode.IsSpace)
+
 	var queries []Query
 	switch {
 	case strings.HasPrefix(sqlValue, "select"):
