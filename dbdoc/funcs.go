@@ -159,7 +159,7 @@ func analyzeFuncBody(ctx *Context, blocks []*ssa.BasicBlock, pos token.Pos) ([]s
 					}
 					calls = append(calls, funcCall{
 						id:  f.Object().Id(),
-						pos: getPos(f.Pos(), instr.Pos(), pos),
+						pos: getPos(instr.Call.Pos(), instr.Pos(), pos),
 					})
 				}
 
