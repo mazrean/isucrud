@@ -3,9 +3,12 @@ package main
 import (
 	"flag"
 	"fmt"
+	"log"
+	"net/http"
 	"os"
 
 	"github.com/mazrean/isucrud/dbdoc"
+	"github.com/mazrean/isucrud/internal/ui"
 )
 
 var (
@@ -17,6 +20,8 @@ var (
 	ignores                      sliceString
 	ignorePrefixes               sliceString
 	ignoreMain, ignoreInitialize bool
+	web                          bool
+	addr                         string
 )
 
 func init() {
@@ -27,6 +32,8 @@ func init() {
 	flag.Var(&ignorePrefixes, "ignorePrefix", "ignore function")
 	flag.BoolVar(&ignoreMain, "ignoreMain", true, "ignore main function")
 	flag.BoolVar(&ignoreInitialize, "ignoreInitialize", true, "ignore functions with 'initialize' in the name")
+	flag.BoolVar(&web, "web", false, "run as web server")
+	flag.StringVar(&addr, "addr", "localhost:7070", "address to listen on")
 }
 
 func main() {
@@ -42,7 +49,7 @@ func main() {
 		panic(fmt.Errorf("failed to get working directory: %w", err))
 	}
 
-	err = dbdoc.Run(dbdoc.Config{
+	nodes, err := dbdoc.Run(dbdoc.Config{
 		WorkDir:             wd,
 		BuildArgs:           flag.Args(),
 		IgnoreFuncs:         ignores,
@@ -53,5 +60,25 @@ func main() {
 	})
 	if err != nil {
 		panic(fmt.Errorf("failed to run dbdoc: %w", err))
+	}
+
+	if web {
+		mux := http.NewServeMux()
+		mux.Handle("GET /", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			r.Header.Set("Content-Type", "text/html")
+
+			err := ui.RenderHTML(w, nodes)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+			}
+		}))
+
+		log.Printf("open http://%s/ in your browser\n", addr)
+		http.ListenAndServe(addr, mux)
+	} else {
+		err = ui.RenderMarkdown(dst, nodes)
+		if err != nil {
+			panic(fmt.Errorf("failed to render markdown: %w", err))
+		}
 	}
 }

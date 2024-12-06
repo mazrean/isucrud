@@ -3,7 +3,6 @@ package dbdoc
 import (
 	"fmt"
 	"go/token"
-	"os"
 
 	"golang.org/x/tools/go/packages"
 	"golang.org/x/tools/go/ssa"
@@ -19,7 +18,7 @@ type Config struct {
 	DestinationFilePath          string
 }
 
-func Run(conf Config) error {
+func Run(conf Config) ([]*Node, error) {
 	ctx := &Context{
 		FileSet: token.NewFileSet(),
 		WorkDir: conf.WorkDir,
@@ -27,17 +26,17 @@ func Run(conf Config) error {
 
 	ssaProgram, pkgs, err := BuildSSA(ctx, conf.BuildArgs)
 	if err != nil {
-		return fmt.Errorf("failed to build ssa: %w", err)
+		return nil, fmt.Errorf("failed to build ssa: %w", err)
 	}
 
 	loopRangeMap, err := BuildLoopRangeMap(ctx)
 	if err != nil {
-		return fmt.Errorf("failed to build loop range map: %w", err)
+		return nil, fmt.Errorf("failed to build loop range map: %w", err)
 	}
 
 	funcs, err := BuildFuncs(ctx, pkgs, ssaProgram, loopRangeMap)
 	if err != nil {
-		return fmt.Errorf("failed to build funcs: %w", err)
+		return nil, fmt.Errorf("failed to build funcs: %w", err)
 	}
 
 	nodes := BuildGraph(
@@ -46,18 +45,7 @@ func Run(conf Config) error {
 		conf.IgnoreMain, conf.IgnoreInitialize,
 	)
 
-	f, err := os.Create(conf.DestinationFilePath)
-	if err != nil {
-		return fmt.Errorf("failed to make directory: %w", err)
-	}
-	defer f.Close()
-
-	err = WriteMermaid(f, nodes)
-	if err != nil {
-		return fmt.Errorf("failed to write mermaid: %w", err)
-	}
-
-	return nil
+	return nodes, nil
 }
 
 func BuildSSA(ctx *Context, args []string) (*ssa.Program, []*packages.Package, error) {
