@@ -39,6 +39,19 @@ func (q Queue[T]) Peek() (T, bool) {
 	return e.Value()
 }
 
+func (q *Queue[T]) Iter(yield func(T) bool) {
+	for e := q.l.Front(); e.e != nil; e = q.l.Front() {
+		q.l.Remove(e)
+
+		v, ok := e.Value()
+		if !ok {
+			break
+		}
+
+		yield(v)
+	}
+}
+
 func (q Queue[T]) Clear() {
 	q.l.Init()
 }
