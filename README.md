@@ -9,9 +9,9 @@ ISUCON用のDBの各テーブルへのCRUDを可視化することで、キャ�
 1. Goのソースコードのプロジェクトルートに移動
 2. isucrudを実行
     ```sh
-    isucrud ./...
+    isucrud -web ./...
     ```
-3. `dbdoc.md`をMermaidに対応したマークダウンで開くとグラフを見れます
+3. ブラウザでhttp://localhost:7070 にアクセスすると、グラフを見られます
 
 ## Install
 ```sh
@@ -21,6 +21,10 @@ go install github.com/mazrean/isucrud@latest
 ## Usage
 ```
 Usage of isucrud:
+  -web
+      run as web server
+  -addr
+      web server address (default ":7070")
   -dst string
     	destination file (default "./dbdoc.md")
   -ignore value
