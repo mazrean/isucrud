@@ -21,6 +21,7 @@ var (
 )
 
 type TemplateParam struct {
+	IsFiltered  bool
 	NodeTypes   []NodeType
 	EdgeTypes   []EdgeType
 	Nodes       []*dbdoc.Node
@@ -50,6 +51,7 @@ func RenderMarkdown(dest string, nodes []*dbdoc.Node) error {
 	}
 
 	err = tmpl.Execute(f, TemplateParam{
+		IsFiltered:  false,
 		NodeTypes:   nodeTypes[1:],
 		EdgeTypes:   edgeTypes[1:],
 		Nodes:       nodes,
@@ -63,8 +65,10 @@ func RenderMarkdown(dest string, nodes []*dbdoc.Node) error {
 }
 
 func RenderHTML(w io.Writer, nodes []*dbdoc.Node, targetNodeID string) error {
+	filtered := false
 	filteredNodes := nodes
 	if targetNodeID != "" {
+		filtered = true
 		filteredNodes = filterNodes(targetNodeID, nodes)
 	}
 
@@ -84,6 +88,7 @@ func RenderHTML(w io.Writer, nodes []*dbdoc.Node, targetNodeID string) error {
 	}
 
 	err = tmpl.Execute(w, TemplateParam{
+		IsFiltered:  filtered,
 		NodeTypes:   nodeTypes[1:],
 		EdgeTypes:   edgeTypes[1:],
 		Nodes:       nodes,

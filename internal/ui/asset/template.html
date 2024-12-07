@@ -18,6 +18,7 @@
 </head>
 
 <body>
+  {{if .IsFiltered}}<button onclick="location.href = '/'">全ノードを表示する</button>{{end}}
   <div>
     nodes: 
     {{range .NodeTypes}}<span>
