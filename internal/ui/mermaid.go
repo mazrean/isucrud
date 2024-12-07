@@ -110,7 +110,10 @@ func RenderMermaid(
 
 	if isHttp {
 		for _, node := range nodes {
-			w.WriteString(fmt.Sprintf("  click %s \"/?node=%s\"\n", node.ID, node.ID))
+			_, err = w.WriteString(fmt.Sprintf("  click %s \"/?node=%s\"\n", node.ID, node.ID))
+			if err != nil {
+				return fmt.Errorf("failed to write click event: %w", err)
+			}
 		}
 	}
 

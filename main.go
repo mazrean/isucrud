@@ -76,7 +76,9 @@ func main() {
 		}))
 
 		log.Printf("open http://%s/ in your browser\n", addr)
-		http.ListenAndServe(addr, mux)
+		if err := http.ListenAndServe(addr, mux); err != nil {
+			panic(fmt.Errorf("server exit: %w", err))
+		}
 	} else {
 		err = ui.RenderMarkdown(dst, nodes)
 		if err != nil {
