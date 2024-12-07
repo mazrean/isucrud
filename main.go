@@ -67,7 +67,9 @@ func main() {
 		mux.Handle("GET /", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			r.Header.Set("Content-Type", "text/html")
 
-			err := ui.RenderHTML(w, nodes)
+			targetNodeID := r.URL.Query().Get("node")
+
+			err := ui.RenderHTML(w, nodes, targetNodeID)
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 			}

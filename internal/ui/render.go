@@ -10,6 +10,7 @@ import (
 	"text/template"
 
 	"github.com/mazrean/isucrud/dbdoc"
+	"github.com/mazrean/isucrud/internal/pkg/list"
 )
 
 var (
@@ -37,7 +38,6 @@ func RenderMarkdown(dest string, nodes []*dbdoc.Node) error {
 	err = RenderMermaid(
 		sb,
 		nodes,
-		nil,
 		false,
 	)
 	if err != nil {
@@ -62,13 +62,16 @@ func RenderMarkdown(dest string, nodes []*dbdoc.Node) error {
 	return nil
 }
 
-func RenderHTML(w io.Writer, nodes []*dbdoc.Node) error {
+func RenderHTML(w io.Writer, nodes []*dbdoc.Node, targetNodeID string) error {
+	filteredNodes := nodes
+	if targetNodeID != "" {
+		filteredNodes = filterNodes(targetNodeID, nodes)
+	}
 
 	sb := &strings.Builder{}
 	err := RenderMermaid(
 		sb,
-		nodes,
-		nil,
+		filteredNodes,
 		true,
 	)
 	if err != nil {
@@ -91,4 +94,80 @@ func RenderHTML(w io.Writer, nodes []*dbdoc.Node) error {
 	}
 
 	return nil
+}
+
+func filterNodes(targetNodeID string, nodes []*dbdoc.Node) []*dbdoc.Node {
+	nodeMap := make(map[string]*dbdoc.Node)
+	for _, node := range nodes {
+		nodeMap[node.ID] = node
+	}
+
+	targetNode, exists := nodeMap[targetNodeID]
+	if !exists {
+		return []*dbdoc.Node{}
+	}
+
+	parentMap := make(map[string][]*dbdoc.Node)
+	for _, node := range nodes {
+		for _, edge := range node.Edges {
+			if edge.Node != nil {
+				parentMap[edge.Node.ID] = append(parentMap[edge.Node.ID], node)
+			}
+		}
+	}
+
+	visited := make(map[string]struct{}, len(nodes))
+	relatedNodeMap := make(map[string]*dbdoc.Node)
+
+	childNodeQueue := list.NewQueue[*dbdoc.Node]()
+	childNodeQueue.Push(targetNode)
+	for current := range childNodeQueue.Iter {
+		// Skip if already visited.
+		if _, ok := visited[current.ID]; ok {
+			continue
+		}
+		visited[current.ID] = struct{}{}
+
+		relatedNodeMap[current.ID] = current
+
+		for _, edge := range current.Edges {
+			childNodeQueue.Push(edge.Node)
+		}
+	}
+
+	visited = make(map[string]struct{}, len(nodes))
+	parentNodeQueue := list.NewQueue[*dbdoc.Node]()
+	parentNodeQueue.Push(targetNode)
+	for current := range parentNodeQueue.Iter {
+		// Skip if already visited.
+		if _, ok := visited[current.ID]; ok {
+			continue
+		}
+		visited[current.ID] = struct{}{}
+
+		relatedNodeMap[current.ID] = current
+
+		for _, parent := range parentMap[current.ID] {
+			parentNodeQueue.Push(parent)
+		}
+	}
+
+	relatedNodes := make([]*dbdoc.Node, 0, len(relatedNodeMap))
+	for _, node := range relatedNodeMap {
+		newEdges := []dbdoc.Edge{}
+		for _, edge := range node.Edges {
+			if _, ok := relatedNodeMap[edge.Node.ID]; ok {
+				newEdges = append(newEdges, edge)
+			}
+		}
+
+		relatedNodes = append(relatedNodes, &dbdoc.Node{
+			ID:       node.ID,
+			Label:    node.Label,
+			Edges:    newEdges,
+			NodeType: node.NodeType,
+		})
+	}
+
+	return relatedNodes
 }

@@ -50,7 +50,6 @@ var (
 func RenderMermaid(
 	w io.StringWriter,
 	nodes []*dbdoc.Node,
-	targetNodeIDs []string,
 	isHttp bool,
 ) error {
 	_, err := w.WriteString("graph LR\n")
