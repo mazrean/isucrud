@@ -18,6 +18,19 @@
 </head>
 
 <body>
+  <div>
+    nodes: 
+    {{range .NodeTypes}}<span>
+      <span style="color: #{{.Color}};">■</span>
+      {{.Label}}
+    </span>{{end}}
+  </div><div>
+    edges:
+    {{range .EdgeTypes}}<span>
+      <span style="color: #{{.Color}};">■</span>
+      {{.Label}}
+    </span>{{end}}
+  </div>
   <div
     class="mermaid"
     id="mermaid-data"

@@ -50,8 +50,8 @@ func RenderMarkdown(dest string, nodes []*dbdoc.Node) error {
 	}
 
 	err = tmpl.Execute(f, TemplateParam{
-		NodeTypes:   nodeTypes,
-		EdgeTypes:   edgeTypes,
+		NodeTypes:   nodeTypes[1:],
+		EdgeTypes:   edgeTypes[1:],
 		Nodes:       nodes,
 		MermaidData: sb.String(),
 	})
@@ -81,8 +81,8 @@ func RenderHTML(w io.Writer, nodes []*dbdoc.Node) error {
 	}
 
 	err = tmpl.Execute(w, TemplateParam{
-		NodeTypes:   nodeTypes,
-		EdgeTypes:   edgeTypes,
+		NodeTypes:   nodeTypes[1:],
+		EdgeTypes:   edgeTypes[1:],
 		Nodes:       nodes,
 		MermaidData: sb.String(),
 	})
