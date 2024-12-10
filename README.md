@@ -23,20 +23,22 @@ go install github.com/mazrean/isucrud@latest
 Usage of isucrud:
   -web
       run as web server
-  -addr
+  -addr string
       web server address (default ":7070")
+  -base string
+      base for serving the web server (default "/")
   -dst string
-    	destination file (default "./dbdoc.md")
+      destination file (default "./dbdoc.md")
   -ignore value
-    	ignore function
+      ignore function
   -ignoreInitialize
-    	ignore functions with 'initialize' in the name (default true)
+      ignore functions with 'initialize' in the name (default true)
   -ignoreMain
-    	ignore main function (default true)
+      ignore main function (default true)
   -ignorePrefix value
-    	ignore function
+      ignore function
   -version
-    	show version
+      show version
 ```
 
 ## 注意事項
