@@ -22,6 +22,7 @@ var (
 
 type TemplateParam struct {
 	IsFiltered  bool
+	BasePath    string
 	NodeTypes   []NodeType
 	EdgeTypes   []EdgeType
 	Nodes       []*dbdoc.Node
@@ -39,7 +40,9 @@ func RenderMarkdown(dest string, nodes []*dbdoc.Node) error {
 	err = RenderMermaid(
 		sb,
 		nodes,
-		false,
+		RenderMermaidOption{
+			IsHttp: false,
+		},
 	)
 	if err != nil {
 		return fmt.Errorf("failed to write mermaid: %w", err)
@@ -64,7 +67,7 @@ func RenderMarkdown(dest string, nodes []*dbdoc.Node) error {
 	return nil
 }
 
-func RenderHTML(w io.Writer, nodes []*dbdoc.Node, targetNodeID string) error {
+func RenderHTML(w io.Writer, nodes []*dbdoc.Node, targetNodeID string, basePath string) error {
 	filtered := false
 	filteredNodes := nodes
 	if targetNodeID != "" {
@@ -76,7 +79,10 @@ func RenderHTML(w io.Writer, nodes []*dbdoc.Node, targetNodeID string) error {
 	err := RenderMermaid(
 		sb,
 		filteredNodes,
-		true,
+		RenderMermaidOption{
+			IsHttp:   true,
+			BasePath: basePath,
+		},
 	)
 	if err != nil {
 		return fmt.Errorf("failed to write mermaid: %w", err)
@@ -89,6 +95,7 @@ func RenderHTML(w io.Writer, nodes []*dbdoc.Node, targetNodeID string) error {
 
 	err = tmpl.Execute(w, TemplateParam{
 		IsFiltered:  filtered,
+		BasePath:    basePath,
 		NodeTypes:   nodeTypes[1:],
 		EdgeTypes:   edgeTypes[1:],
 		Nodes:       nodes,

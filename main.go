@@ -22,6 +22,7 @@ var (
 	ignoreMain, ignoreInitialize bool
 	web                          bool
 	addr                         string
+	base                         string
 )
 
 func init() {
@@ -34,6 +35,7 @@ func init() {
 	flag.BoolVar(&ignoreInitialize, "ignoreInitialize", true, "ignore functions with 'initialize' in the name")
 	flag.BoolVar(&web, "web", false, "run as web server")
 	flag.StringVar(&addr, "addr", "localhost:7070", "address to listen on")
+	flag.StringVar(&base, "base", "/", "base for serving the web server")
 }
 
 func main() {
@@ -69,7 +71,7 @@ func main() {
 
 			targetNodeID := r.URL.Query().Get("node")
 
-			err := ui.RenderHTML(w, nodes, targetNodeID)
+			err := ui.RenderHTML(w, nodes, targetNodeID, base)
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 			}

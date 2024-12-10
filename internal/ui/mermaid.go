@@ -33,6 +33,11 @@ type EdgeType struct {
 	valid bool
 }
 
+type RenderMermaidOption struct {
+	IsHttp   bool
+	BasePath string
+}
+
 var (
 	nodeTypes = []NodeType{
 		dbdoc.NodeTypeTable:    {"table", "テーブル", tableNodeColor, true},
@@ -50,7 +55,7 @@ var (
 func RenderMermaid(
 	w io.StringWriter,
 	nodes []*dbdoc.Node,
-	isHttp bool,
+	option RenderMermaidOption,
 ) error {
 	_, err := w.WriteString("graph LR\n")
 	if err != nil {
@@ -108,9 +113,9 @@ func RenderMermaid(
 		}
 	}
 
-	if isHttp {
+	if option.IsHttp {
 		for _, node := range nodes {
-			_, err = w.WriteString(fmt.Sprintf("  click %s \"/?node=%s\"\n", node.ID, node.ID))
+			_, err = w.WriteString(fmt.Sprintf("  click %s \"%s?node=%s\"\n", node.ID, option.BasePath, node.ID))
 			if err != nil {
 				return fmt.Errorf("failed to write click event: %w", err)
 			}
