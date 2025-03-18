@@ -1,6 +1,7 @@
 module github.com/mazrean/isucrud
 
-go 1.23
+go 1.23.7
+
 require golang.org/x/tools v0.31.0
 
 require (
