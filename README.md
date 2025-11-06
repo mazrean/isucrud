@@ -1,5 +1,7 @@
 # isucrud
 
+<a href="https://flatt.tech/oss/gmo/trampoline" target="_blank"><img src="https://flatt.tech/assets/images/badges/gmo-oss.svg" height="24px"/></a>
+
 ISUCON用のDBの各テーブルへのCRUDを可視化することで、キャッシュすべき箇所の判断を助けるツールです。
 どの関数を通り、どのテーブルへCRUDが発生するSQLが実行されているか解析し、以下のようなグラフ構造で表現します。
 
