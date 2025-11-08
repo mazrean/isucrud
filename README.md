@@ -1,7 +1,5 @@
 # isucrud
 
-<a href="https://flatt.tech/oss/gmo/trampoline" target="_blank"><img src="https://flatt.tech/assets/images/badges/gmo-oss.svg" height="24px"/></a>
-
 ISUCON用のDBの各テーブルへのCRUDを可視化することで、キャッシュすべき箇所の判断を助けるツールです。
 どの関数を通り、どのテーブルへCRUDが発生するSQLが実行されているか解析し、以下のようなグラフ構造で表現します。
 
@@ -46,3 +44,9 @@ Usage of isucrud:
 ## 注意事項
 SQLの解析を簡易的に行っている関係で、解析に失敗したりCRUD対象テーブルを見逃すことがあります。
 あくまでもキャッシュ対象テーブルの判断の参考程度に用いることをお勧めします。
+
+## Support
+
+このプロジェクトでは、GMO FlattSecurity社の「GMO オープンソース開発者応援プログラム」の支援を受けて、「Takumi byGMO」によるセキュリティ診断を定期的に行っています。
+
+<a href="https://flatt.tech/oss/gmo/trampoline" target="_blank"><img src="https://flatt.tech/assets/images/badges/gmo-oss.svg" height="24px"/></a>
