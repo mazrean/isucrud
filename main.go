@@ -28,7 +28,7 @@ var (
 func init() {
 	flag.BoolVar(&versionFlag, "version", false, "show version")
 
-	flag.StringVar(&dst, "dst", "./dbdoc.md", "destination file")
+	flag.StringVar(&dst, "dst", "./dbdoc.md", "destination file (use '-' for stdout)")
 	flag.Var(&ignores, "ignore", "ignore function")
 	flag.Var(&ignorePrefixes, "ignorePrefix", "ignore function")
 	flag.BoolVar(&ignoreMain, "ignoreMain", true, "ignore main function")
