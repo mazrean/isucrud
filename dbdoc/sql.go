@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"go/token"
 	"log"
+	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
@@ -28,7 +29,7 @@ func AnalyzeSQL(ctx *Context, sql stringLiteral) []Query {
 	for _, sqlValue := range strQueries {
 		newQueries := analyzeSQLWithoutSubQuery(ctx, sqlValue, sql.pos)
 		for _, query := range newQueries {
-			fmt.Println(query)
+			fmt.Fprintln(os.Stderr, query)
 		}
 		queries = append(queries, newQueries...)
 	}
@@ -228,9 +229,9 @@ func tableForm(ctx *Context, sqlValue string, pos token.Pos) []string {
 		return nil
 	}
 
-	fmt.Printf("query:%s\n", sqlValue)
-	fmt.Printf("position: %s:%d:%d\n", filename, position.Line, position.Column)
-	fmt.Print("table name?: ")
+	fmt.Fprintf(os.Stderr, "query:%s\n", sqlValue)
+	fmt.Fprintf(os.Stderr, "position: %s:%d:%d\n", filename, position.Line, position.Column)
+	fmt.Fprint(os.Stderr, "table name?: ")
 	var input string
 	_, err = fmt.Scanln(&input)
 	if err != nil {

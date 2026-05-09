@@ -30,14 +30,20 @@ type TemplateParam struct {
 }
 
 func RenderMarkdown(dest string, nodes []*dbdoc.Node) error {
-	f, err := os.Create(dest)
-	if err != nil {
-		return fmt.Errorf("failed to make directory: %w", err)
+	var w io.Writer
+	if dest == "-" {
+		w = os.Stdout
+	} else {
+		f, err := os.Create(dest)
+		if err != nil {
+			return fmt.Errorf("failed to make directory: %w", err)
+		}
+		defer f.Close()
+		w = f
 	}
-	defer f.Close()
 
 	sb := &strings.Builder{}
-	err = RenderMermaid(
+	err := RenderMermaid(
 		sb,
 		nodes,
 		RenderMermaidOption{
@@ -53,7 +59,7 @@ func RenderMarkdown(dest string, nodes []*dbdoc.Node) error {
 		return fmt.Errorf("failed to parse template: %w", err)
 	}
 
-	err = tmpl.Execute(f, TemplateParam{
+	err = tmpl.Execute(w, TemplateParam{
 		IsFiltered:  false,
 		NodeTypes:   nodeTypes[1:],
 		EdgeTypes:   edgeTypes[1:],
